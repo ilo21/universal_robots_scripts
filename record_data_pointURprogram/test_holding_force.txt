@@ -1,0 +1,20 @@
+ Program
+   Variables Setup
+   BeforeStart
+     CurrentZforce≔0.0
+     write_output_float_register(0, 0.0)
+   Robot Program
+     MoveL
+       Start_pos
+     Force
+       Wait CurrentZforce≥2
+       Contact≔get_actual_tcp_pose()
+       Loop 4 times
+         MoveL
+           Contact_pos1
+           Contact_pos2
+   Thread_1
+     CurrentTCPforce≔get_tcp_force()
+     CurrentZforce≔CurrentTCPforce[2]
+     write_output_float_register(0,CurrentZforce)
+     Wait: 0.01

@@ -1,0 +1,8 @@
+<?xml version="1.0"?>
+<rtde_config>
+	<recipe key="out">
+		<field name="timestamp" type="DOUBLE"/>
+        <field name="output_double_register_0" type="DOUBLE"/>
+		
+	</recipe>
+</rtde_config>

@@ -1,0 +1,84 @@
+def test_holding_force():
+  global _hidden_verificationVariable=0
+  set_tcp(p[0.0,0.0,0.0,0.0,0.0,0.0])
+  set_gravity([0.0, 0.0, 9.82])
+  set_tool_communication(False, 115200, 0, 1, 1.5, 3.5)
+  set_tool_output_mode(0)
+  set_tool_digital_output_mode(0, 1)
+  set_tool_digital_output_mode(1, 1)
+  set_tool_voltage(0)
+  set_target_payload(0.030000, [0.000000, 0.000000, 0.000000], [0.000004, 0.000004, 0.000004, 0.000000, 0.000000, 0.000000])
+  set_safety_mode_transition_hardness(1)
+  set_standard_analog_input_domain(0, 1)
+  set_standard_analog_input_domain(1, 1)
+  set_tool_analog_input_domain(0, 1)
+  set_tool_analog_input_domain(1, 1)
+  set_analog_outputdomain(0, 0)
+  set_analog_outputdomain(1, 0)
+  set_input_actions_to_default()
+  # begin: URCap Installation Node
+  #   Source: Remote TCP & Toolpath, 1.3.0.build16, Universal Robots A/S
+  #   Type: Remote TCP & Toolpath
+  # end: URCap Installation Node
+  step_count_d434c6cb_2b61_47e4_931b_4c702f70f94d = 0.0
+  thread Step_Counter_Thread_99c54ee3_d5b6_4bee_bdff_cd3d836bc8b8():
+    while (True):
+      step_count_d434c6cb_2b61_47e4_931b_4c702f70f94d = step_count_d434c6cb_2b61_47e4_931b_4c702f70f94d + 1.0
+      sync()
+    end
+  end
+  run Step_Counter_Thread_99c54ee3_d5b6_4bee_bdff_cd3d836bc8b8()
+  global Start_pos_p=p[-.136617018792, -.266478969688, .242520240059, .008519889590, 3.110465607556, .058289521768]
+  global Start_pos_q=[-1.6020258108722132, -1.5032284569791337, -1.9144502878189087, -1.3326451194337388, 1.6051132678985596, -0.02479106584657842]
+  global Contact_pos1_from_p=p[-.136606785834, -.266477201807, .193537394274, .008504263779, 3.110443950419, .058326610575]
+  global Contact_pos1_to_p=p[-.021363894735, -.266478194802, .193543184194, .008537870192, 3.110432168662, .058327768651]
+  global Contact_pos2_from_p=p[-.021361018359, -.266471682453, .193535565925, .008522779590, 3.110438363699, .058414254487]
+  global Contact_pos2_to_p=p[-.136964497728, -.266469700961, .193542186275, .008601405196, 3.110413286661, .058327624595]
+  $ 2 "BeforeStart"
+  $ 3 "CurrentZforce≔0.0"
+  global CurrentZforce=0.0
+  $ 4 "write_output_float_register(0, 0.0)"
+  write_output_float_register(0, 0.0)
+  $ 15 "Thread_1"
+  thread Thread_1():
+    while (True):
+      $ 16 "CurrentTCPforce≔get_tcp_force()"
+      global CurrentTCPforce= get_tcp_force ()
+      $ 17 "CurrentZforce≔CurrentTCPforce[2]"
+      global CurrentZforce=CurrentTCPforce[2]
+      $ 18 "write_output_float_register(0,CurrentZforce)"
+      write_output_float_register(0,CurrentZforce)
+      $ 19 "Wait: 0.01"
+      sleep(0.01)
+    end
+  end
+  threadId_Thread_1 = run Thread_1()
+  while (True):
+    $ 5 "Robot Program"
+    $ 6 "MoveL"
+    $ 7 "Start_pos" "breakAfter"
+    movel(Start_pos_p, a=1.2, v=0.1)
+    $ 8 "Force"
+    sleep(0.02)
+    zero_ftsensor()
+    force_mode(p[0.0,0.0,0.0,0.0,0.0,0.0], [0, 0, 1, 0, 0, 0], [0.0, 0.0, -2.0, 0.0, 0.0, 0.0], 2, [0.1, 0.1, 0.1, 0.3490658503988659, 0.3490658503988659, 0.3490658503988659])
+    $ 9 "Wait CurrentZforce≥2" "noBreak"
+    while (not(CurrentZforce >= 2)):
+      sync()
+    end
+    $ 10 "Contact≔get_actual_tcp_pose()" "noBreak"
+    global Contact= get_actual_tcp_pose ()
+    $ 11 "Loop 4 times" "noBreak"
+    Loop_1 = 0
+    while (Loop_1 < 4):
+      $ 12 "MoveL" "noBreak"
+      $ 13 "Contact_pos1" "noBreak"
+      movel(pose_add(get_target_tcp_pose(), pose_sub(Contact_pos1_to_p, Contact_pos1_from_p)), a=1.2, v=0.05)
+      $ 14 "Contact_pos2" "noBreak"
+      movel(pose_add(get_target_tcp_pose(), pose_sub(Contact_pos2_to_p, Contact_pos2_from_p)), a=1.2, v=0.05)
+      Loop_1 = Loop_1 + 1
+    end
+    end_force_mode()
+    stopl(5.0)
+  end
+end
